@@ -69,6 +69,7 @@ async function run() {
 
         app.get('/classes',async(req,res)=>{
             const result = await classesCollection.find().toArray();
+            // console.log(result);
             res.send(result);
         })
 
