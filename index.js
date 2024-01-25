@@ -2,9 +2,19 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 var jwt = require('jsonwebtoken');
-const port = process.env.PORT || 5000;
 require('dotenv').config()
+const port = process.env.PORT || 5000;
 //middleware
+
+// app.use(cors({
+//     origin: [
+//       // 'http://localhost:5173',
+//       'https://the-master-6c9ad.web.app',
+//       'https://the-master-6c9ad.firebaseapp.com'
+      
+//     ],
+//     credentials: true
+//   }));
 app.use(cors())
 app.use(express.json());
 
@@ -178,7 +188,6 @@ async function run() {
 
         app.get('/classes', async (req, res) => {
             const { email } = req.query;
-
             if (email) {
                 // If email is provided, filter the data based on the email
                 const result = await classesCollection.find({ email: email }).toArray();
