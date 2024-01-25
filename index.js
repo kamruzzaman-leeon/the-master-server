@@ -173,15 +173,15 @@ async function run() {
             }
             res.send(result);
         })
-        
+
         // classes/admin
 
         app.get('/classes', async (req, res) => {
             const { email } = req.query;
-        
+
             if (email) {
                 // If email is provided, filter the data based on the email
-                const result = await classesCollection.find({ email:email }).toArray();
+                const result = await classesCollection.find({ email: email }).toArray();
                 res.send(result);
             } else {
                 // If no email is provided, return all data
@@ -190,14 +190,14 @@ async function run() {
             }
         });
 
-        app.post('/teacher/addclass',verifyToken,verifyTeacher, async (req, res) => {
+        app.post('/teacher/addclass', verifyToken, verifyTeacher, async (req, res) => {
             const item = req.body;
             const result = await classesCollection.insertOne(item);
             console.log(result)
             res.send(result);
         })
 
-        
+
         app.delete('/classes/:id', verifyToken, verifyTeacher, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -213,6 +213,28 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     status: item.status
+                }
+            }
+            const result = await classesCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
+        // teacher/updateclass/${_id}
+        app.patch('/classes/teacher/update/:id', verifyToken, verifyTeacher, async (req, res) => {
+            const item = req.body;
+            console.log(item)
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    name: item.name,
+                    email: item.email,
+                    title: item.title,
+                    price: item.price,
+                    image: item.image,
+                    description: item.description,
+                    status: item.status,
+
                 }
             }
             const result = await classesCollection.updateOne(filter, updatedDoc);
