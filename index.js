@@ -60,6 +60,16 @@ async function run() {
             }
             next();
         }
+        const verifyTeacher = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isTeacher = user?.role === 'teacher';
+            if (!isTeacher) {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+            next();
+        }
 
         // user related api
         app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
@@ -158,15 +168,54 @@ async function run() {
                 }
             }
             const result = await teacherCollection.updateOne(filter, updatedDoc);
-            if(result.modifiedCount){
-                const userroleresult= await userCollection.updateOne({ email: item.email }, { $set: { role: 'teacher' } })
+            if (result.modifiedCount) {
+                const userroleresult = await userCollection.updateOne({ email: item.email }, { $set: { role: 'teacher' } })
             }
             res.send(result);
         })
+        
+        // classes/admin
 
         app.get('/classes', async (req, res) => {
-            const result = await classesCollection.find().toArray();
-            // console.log(result);
+            const { email } = req.query;
+        
+            if (email) {
+                // If email is provided, filter the data based on the email
+                const result = await classesCollection.find({ email:email }).toArray();
+                res.send(result);
+            } else {
+                // If no email is provided, return all data
+                const result = await classesCollection.find().toArray();
+                res.send(result);
+            }
+        });
+
+        app.post('/teacher/addclass',verifyToken,verifyTeacher, async (req, res) => {
+            const item = req.body;
+            const result = await classesCollection.insertOne(item);
+            console.log(result)
+            res.send(result);
+        })
+
+        
+        app.delete('/classes/:id', verifyToken, verifyTeacher, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await classesCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.patch('/classes/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const item = req.body;
+            console.log(item)
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    status: item.status
+                }
+            }
+            const result = await classesCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
 
